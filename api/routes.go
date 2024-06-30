@@ -1,4 +1,4 @@
-package router
+package api
 
 import (
 	"sponsor-sv/services/account"
