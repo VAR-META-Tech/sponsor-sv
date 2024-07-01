@@ -18,7 +18,7 @@ type Routers struct {
 
 var routerList = []Routers{
 	{
-		Pattern:  "/transfer/sponsor",
+		Pattern:  "/sponsor/transfer",
 		Method:   "POST",
 		HandlerF: transfer.TransferHandler,
 		Name:     "transfer the information to backend",
@@ -36,9 +36,9 @@ var routerList = []Routers{
 		Name:     "get list sponsor",
 	},
 	{
-		Pattern:  "/sponsor/endpoint",
+		Pattern:  "/user/balance",
 		Method:   "GET",
-		HandlerF: sponsor.GetEndpoint,
+		HandlerF: sponsor.GetBalance,
 		Name:     "get endpoint",
 	},
 }

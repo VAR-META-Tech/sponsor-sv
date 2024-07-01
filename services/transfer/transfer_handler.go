@@ -1,14 +1,15 @@
 package transfer
 
 import (
-	"sponsor-sv/models"
-	"sponsor-sv/services/gclient"
-	"encoding/json"
 	"io"
 	"log"
 	"net/http"
+	"sponsor-sv/models"
+	"sponsor-sv/services/gclient"
 
 	"github.com/gin-gonic/gin"
+	"github.com/gnolang/gno/tm2/pkg/amino"
+	"github.com/gnolang/gno/tm2/pkg/std"
 )
 
 func TransferHandler(c *gin.Context) {
@@ -20,21 +21,22 @@ func TransferHandler(c *gin.Context) {
 			Error:   err.Error(),
 			Details: "can not get transfer message",
 		}
-		c.JSON(http.StatusBadRequest, prob)
+		c.AbortWithStatusJSON(http.StatusBadRequest, prob)
+		return
 	}
 
 	// Decode the message ?
-	msg := models.Transaction{}
-	errMarshal := json.Unmarshal(bodyBytes, &msg)
+	msg := std.Tx{}
+	errMarshal := amino.UnmarshalJSON(bodyBytes, &msg)
 	if errMarshal != nil {
-		log.Println("Error get sign msg: ", err)
 		prob := models.ProblemDetail{
 			Error:   errMarshal.Error(),
 			Details: "can not decode transfer message",
 		}
-		c.JSON(http.StatusBadRequest, prob)
+		c.AbortWithStatusJSON(http.StatusBadRequest, prob)
 		return
 	}
+	log.Printf("Debug: %v\n", msg)
 	cli := gclient.GetClient()
 	result, err := TransferProcess(cli, msg)
 	if err != nil {
@@ -42,7 +44,7 @@ func TransferHandler(c *gin.Context) {
 			Error:   err.Error(),
 			Details: "can not process transfering",
 		}
-		c.JSON(http.StatusBadRequest, prob)
+		c.AbortWithStatusJSON(http.StatusBadRequest, prob)
 		return
 	}
 	c.JSON(http.StatusOK, result)

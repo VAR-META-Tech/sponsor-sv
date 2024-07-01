@@ -10,13 +10,13 @@ var Client gnoclient.Client
 
 func init() {
 	// Initialize keybase from a directory
-	keybase, _ := keys.NewKeyBaseFromDir(".")
+	keybase, _ := keys.NewKeyBaseFromDir("/Users/thinhnx/Library/Application Support/gno")
 
 	// Create signer
 	signer := gnoclient.SignerFromKeybase{
 		Keybase:  keybase,
-		Account:  "<keypair_name>",     // Name of your keypair in keybase
-		Password: "<keypair_password>", // Password to decrypt your keypair
+		Account:  "myAdenaKey",     // Name of your keypair in keybase
+		Password: "1", // Password to decrypt your keypair
 		ChainID:  "dev",                // id of Gno.land chain
 	}
 

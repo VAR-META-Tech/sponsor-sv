@@ -10,6 +10,14 @@ import (
 
 func GetAccountHandler(c *gin.Context) {
 	targetAddr := c.Request.URL.Query().Get("addr")
+	if targetAddr == "" {
+		prob := models.ProblemDetail{
+			Error: "bad query",
+			Details: "can not get address query",
+		}
+		c.AbortWithStatusJSON(http.StatusBadRequest, prob)
+		return
+	}
 	cli := gclient.GetClient()
 	baseAccount, err := GetAccountBaseWithAddr(cli, targetAddr)
 	if err != nil {
@@ -17,7 +25,8 @@ func GetAccountHandler(c *gin.Context) {
 			Error:   err.Error(),
 			Details: "can not query account",
 		}
-		c.JSON(http.StatusInternalServerError, prob)
+		c.AbortWithStatusJSON(http.StatusInternalServerError, prob)
+		return
 	}
 	accToReponse := models.AccountInfo{
 		Addr:           baseAccount.Address.String(),

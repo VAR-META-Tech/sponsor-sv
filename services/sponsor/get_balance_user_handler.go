@@ -8,17 +8,18 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func GetEndpoint(c *gin.Context) {
+func GetBalance(c *gin.Context) {
 	// Now we just take sponsor address from query
-	targetSponsor := c.Query("addr")
+	targetUser := c.Query("addr")
 	client := gclient.GetClient()
-	sponsorEndpoint, err := GetEndpointProcess(client, targetSponsor, "gno.land/r/thinhnx/sponsor_realm", "GetSponsorEndpoint")
+	result, err := GetBalanceOfUser(client, targetUser)
 	if err != nil {
 		prob := models.ProblemDetail{
 			Error:   err.Error(),
 			Details: "Can not query to chain",
 		}
 		c.JSON(http.StatusInternalServerError, prob)
+		return
 	}
-	c.JSON(http.StatusOK, sponsorEndpoint)
+	c.JSON(http.StatusOK, result)
 }

@@ -6,7 +6,7 @@ import (
 )
 
 func main() {
-	log.Println("Hello, this is varmeta")
+	log.Println("Hello, this is VARMETA")
 	log.Println("Starting server")
 	defaultHost := "localhost:8765"
 	api.StartH2CServer(defaultHost)
