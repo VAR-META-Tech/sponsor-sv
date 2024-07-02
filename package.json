@@ -1,0 +1,6 @@
+{
+    "apps" : [{
+      "name"        : "sponsor-service",
+      "script"      : "./sponsor_service"
+    }]
+}
