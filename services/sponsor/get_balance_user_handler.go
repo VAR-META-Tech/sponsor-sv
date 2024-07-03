@@ -10,13 +10,13 @@ import (
 
 func GetBalance(c *gin.Context) {
 	// Now we just take sponsor address from query
-	targetUser := c.Query("addr")
+	targetUser := c.Param("id")
 	client := gclient.GetClient()
-	result, err := GetBalanceOfUser(client, targetUser)
+	result, err := GetUserBalance(client, targetUser)
 	if err != nil {
 		prob := models.ProblemDetail{
 			Error:   err.Error(),
-			Details: "Can not query to chain",
+			Details: "error query to chain",
 		}
 		c.JSON(http.StatusInternalServerError, prob)
 		return

@@ -24,3 +24,8 @@ type TxHashDecode struct {
 	Caller string
 	Amount string
 }
+
+type TransferResult struct {
+	Success bool
+	MessageHash []byte
+}

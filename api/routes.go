@@ -1,11 +1,13 @@
 package api
 
 import (
+	// "sponsor-sv/services/account"
+	"net/http"
 	"sponsor-sv/services/account"
 	"sponsor-sv/services/sponsor"
 	"sponsor-sv/services/transfer"
-	"net/http"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
@@ -17,26 +19,31 @@ type Routers struct {
 }
 
 var routerList = []Routers{
-	{
-		Pattern:  "/sponsor/transfer",
-		Method:   "POST",
-		HandlerF: transfer.TransferHandler,
-		Name:     "transfer the information to backend",
-	},
+	// not use yet
 	{
 		Pattern:  "/account/details",
 		Method:   "GET",
 		HandlerF: account.GetAccountHandler,
 		Name:     "get account detail in std.BaseAccount",
 	},
+
+	// not use yet
+	// {
+	// 	Pattern:  "/sponsor/list",
+	// 	Method:   "GET",
+	// 	HandlerF: sponsor.ListAllHandler,
+	// 	Name:     "get list sponsor",
+	// },
+
 	{
-		Pattern:  "/sponsor/list",
-		Method:   "GET",
-		HandlerF: sponsor.ListAllHandler,
-		Name:     "get list sponsor",
+		Pattern:  "/sponsor/transfer",
+		Method:   "POST",
+		HandlerF: transfer.TransferHandler,
+		Name:     "transfer the information to backend",
 	},
+
 	{
-		Pattern:  "/user/balance",
+		Pattern:  "/user/balance/:id",
 		Method:   "GET",
 		HandlerF: sponsor.GetBalance,
 		Name:     "get endpoint",
@@ -45,8 +52,13 @@ var routerList = []Routers{
 
 func NewHandler() http.Handler {
 	baseRoute := gin.Default()
+	config := cors.DefaultConfig()
+	config.AllowAllOrigins = true
+	config.AddAllowMethods("GET", "POST", "PUT", "DELETE")
+	corsMW := cors.New(config)
 	v1Feature := baseRoute.Group("/v1")
 	gin.SetMode(gin.DebugMode)
+	v1Feature.Use(corsMW)
 
 	for _, router := range routerList {
 		switch router.Method {

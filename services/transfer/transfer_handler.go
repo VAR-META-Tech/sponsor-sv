@@ -2,7 +2,6 @@ package transfer
 
 import (
 	"io"
-	"log"
 	"net/http"
 	"sponsor-sv/models"
 	"sponsor-sv/services/gclient"
@@ -14,7 +13,6 @@ import (
 
 func TransferHandler(c *gin.Context) {
 	// Get the body
-
 	bodyBytes, err := io.ReadAll(c.Request.Body)
 	if err != nil {
 		prob := models.ProblemDetail{
@@ -25,24 +23,27 @@ func TransferHandler(c *gin.Context) {
 		return
 	}
 
-	// Decode the message ?
+	// Decode the message with amino json type
 	msg := std.Tx{}
 	errMarshal := amino.UnmarshalJSON(bodyBytes, &msg)
 	if errMarshal != nil {
 		prob := models.ProblemDetail{
-			Error:   errMarshal.Error(),
-			Details: "can not decode transfer message",
+			Error:   "can not decode transfer message",
+			Details: errMarshal.Error(),
 		}
 		c.AbortWithStatusJSON(http.StatusBadRequest, prob)
 		return
 	}
-	log.Printf("Debug: %v\n", msg)
 	cli := gclient.GetClient()
+	// sponsorTx := SponsorMsg()
+	// x, _ := amino.MarshalJSON(sponsorTx)
+	// log.Printf("predefined sponsorTx: %s\n", x)
+
 	result, err := TransferProcess(cli, msg)
 	if err != nil {
 		prob := models.ProblemDetail{
-			Error:   err.Error(),
-			Details: "can not process transfering",
+			Error:   "can not process transfering",
+			Details: err.Error(),
 		}
 		c.AbortWithStatusJSON(http.StatusBadRequest, prob)
 		return

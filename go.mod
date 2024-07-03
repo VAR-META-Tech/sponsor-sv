@@ -2,7 +2,10 @@ module sponsor-sv
 
 go 1.22.2
 
-require github.com/gin-gonic/gin v1.10.0
+require (
+	github.com/gin-contrib/cors v1.7.2
+	github.com/gin-gonic/gin v1.10.0
+)
 
 require (
 	github.com/btcsuite/btcd/btcec/v2 v2.3.3 // indirect

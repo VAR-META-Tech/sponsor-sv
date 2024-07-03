@@ -7,15 +7,24 @@ import (
 )
 
 var Client gnoclient.Client
+var CallerClient gnoclient.Client
 
 func init() {
 	// Initialize keybase from a directory
-	keybase, _ := keys.NewKeyBaseFromDir("/Users/thinhnx/Library/Application Support/gno")
+	keybase, _ := keys.NewKeyBaseFromDir("/home/vm/thinhnx/sponsor-sv")
 
 	// Create signer
 	signer := gnoclient.SignerFromKeybase{
 		Keybase:  keybase,
 		Account:  "myAdenaKey",     // Name of your keypair in keybase
+		Password: "1", // Password to decrypt your keypair
+		ChainID:  "dev",                // id of Gno.land chain
+	}
+
+	// Create signer
+	callerSigner := gnoclient.SignerFromKeybase{
+		Keybase:  keybase,
+		Account:  "testKey",     // Name of your keypair in keybase
 		Password: "1", // Password to decrypt your keypair
 		ChainID:  "dev",                // id of Gno.land chain
 	}
@@ -31,9 +40,16 @@ func init() {
 		Signer:    signer,
 		RPCClient: rpc,
 	}
+	CallerClient = gnoclient.Client{
+		Signer: callerSigner,
+		RPCClient: rpc,
+	}
 
 }
 
 func GetClient() *gnoclient.Client {
 	return &Client
+}
+func GetCallerClient() *gnoclient.Client {
+	return &CallerClient
 }

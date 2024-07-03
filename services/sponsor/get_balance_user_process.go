@@ -1,13 +1,16 @@
 package sponsor
 
 import (
+	"fmt"
+
 	"github.com/gnolang/gno/gno.land/pkg/gnoclient"
 	core_types "github.com/gnolang/gno/tm2/pkg/bft/rpc/core/types"
 )
 
-func GetBalanceOfUser(cli *gnoclient.Client, targetUser string) (string, error) {
+func GetUserBalance(cli *gnoclient.Client, targetUser string) (string, error) {
 	// Evaluate expression
-	qevalRes, _, err := cli.QEval("gno.land/r/varmeta/vmt721", "BalanceOf(\"g162jgpk4740r6a7g53cgz9ahxqtyuekgqchw6w9\")")
+	qevalExpression := fmt.Sprintf("BalanceOf(\"%s\")", targetUser)
+	qevalRes, _, err := cli.QEval("gno.land/r/varmeta/vmt721", qevalExpression)
 	if err != nil {
 		return "", err
 	}
