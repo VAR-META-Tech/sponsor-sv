@@ -27,15 +27,21 @@ func TransferProcess(cli *gnoclient.Client, msg std.Tx) (maybeTxHash []byte, err
 	baseInfo, err := cli.Signer.Info()
 	log.Println("Error: ", err)
 	sAddr := baseInfo.GetAddress()
-	log.Printf("sAddr: %s\n", sAddr.String())
+	log.Printf("======= sAddr: %s\n", sAddr.String())
 	sBaseAcc, err := account.GetAccountBaseWithAddr(cli, sAddr.String())
+	log.Printf("======= sAccountNumb: %v\n", sBaseAcc.GetSequence())
+	log.Printf("======= sSequence: %v\n", sBaseAcc.GetAccountNumber())
+	stdSigs := msg.GetSignatures()
+	lenSig := msg.GetSigners()
+	log.Printf("======= len stdSig: %v\n", len(stdSigs))
+	log.Printf("======= len signer`: %v\n", len(lenSig))
 	if err != nil {
 		log.Println("Error getaccount: ", err)
 		return []byte{}, err
 	}
 	log.Printf("message before execute: %+v\n", msg)
 	// Execute the commit
-	resultExecute, err := cli.ExecuteSponsorTransaction(msg, sBaseAcc.Sequence, sBaseAcc.Sequence)
+	resultExecute, err := cli.ExecuteSponsorTransaction(msg, sBaseAcc.AccountNumber, sBaseAcc.Sequence)
 	if err != nil {
 		log.Println("Error execute: ", err)
 		return []byte{}, err

@@ -2,6 +2,7 @@ package transfer
 
 import (
 	"io"
+	"log"
 	"net/http"
 	"sponsor-sv/models"
 	"sponsor-sv/services/gclient"
@@ -35,9 +36,9 @@ func TransferHandler(c *gin.Context) {
 		return
 	}
 	cli := gclient.GetClient()
-	// sponsorTx := SponsorMsg()
-	// x, _ := amino.MarshalJSON(sponsorTx)
-	// log.Printf("predefined sponsorTx: %s\n", x)
+	sponsorTx := SponsorMsg()
+	x, _ := amino.MarshalJSON(sponsorTx)
+	log.Printf("predefined sponsorTx: %s\n", x)
 
 	result, err := TransferProcess(cli, msg)
 	if err != nil {
