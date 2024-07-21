@@ -12,7 +12,7 @@ var CallerClient gnoclient.Client
 func init() {
 	// Initialize keybase from a directory
 	// keybase, _ := keys.NewKeyBaseFromDir("/home/vm/thinhnx/sponsor-sv")
-	 keybase, _ := keys.NewKeyBaseFromDir("~/Work/varmeta/sponsor-sv")
+	 keybase, _ := keys.NewKeyBaseFromDir("keybase")
 	// Create signer
 	signer := gnoclient.SignerFromKeybase{
 		Keybase:  keybase,
