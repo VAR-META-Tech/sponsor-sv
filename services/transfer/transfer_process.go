@@ -6,8 +6,8 @@ import (
 	"log"
 	"sponsor-sv/models"
 	"sponsor-sv/services/account"
-	ctypes "github.com/gnolang/gno/tm2/pkg/bft/rpc/core/types"
 
+	ctypes "github.com/gnolang/gno/tm2/pkg/bft/rpc/core/types"
 
 	"github.com/gnolang/gno/gno.land/pkg/gnoclient"
 	"github.com/gnolang/gno/tm2/pkg/std"
@@ -17,7 +17,10 @@ var errInvalidLenMsg error = errors.New("invalid sponsor message length")
 
 // This TransferProcess reconstruct the std.TX{}, feed the ExecuteSponsorTransaction() with account number and sequence number
 // Returns the encoded/marshalled ResultBroadcastTxCommit{} with hashTx inside :)
-func TransferProcess(cli *gnoclient.Client, msg std.Tx) (maybeTxHash []byte, err error) {
+func TransferProcess(cli *gnoclient.Client, msgInput models.Tx) (maybeTxHash []byte, err error) {
+	msg := std.Tx{}
+	// need to mapping input msg and real msg
+	// msg := msgInput
 	// Check for length
 	if !validSponsorLen(msg) {
 		return []byte{}, errInvalidLenMsg
@@ -57,7 +60,7 @@ func TransferProcess(cli *gnoclient.Client, msg std.Tx) (maybeTxHash []byte, err
 	return resultEncoded, nil
 }
 
-func validSponsorLen(msg std.Tx ) bool {
+func validSponsorLen(msg std.Tx) bool {
 	return len(msg.Msgs) >= 2
 }
 
@@ -68,7 +71,7 @@ func rebuildMessage(msg *ctypes.ResultBroadcastTxCommit) models.TransferResult {
 		}
 	}
 	return models.TransferResult{
-		Success: true,
+		Success:     true,
 		MessageHash: msg.Hash,
 	}
 }
