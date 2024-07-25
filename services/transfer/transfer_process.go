@@ -43,12 +43,11 @@ func TransferProcess(cli *gnoclient.Client, msg std.Tx) (maybeTxHash []byte, err
 	nullSignature := std.Signature{}
 	newMsgSigs := append([]std.Signature{nullSignature}, msg.Signatures...)
 	msg.Signatures = newMsgSigs
-	msg.Memo = "produced by sponsor service"
-
-	log.Printf("======= message before execute: %+v\n", msg)
 
 	// valid check, if not valid then no execute
 	if checkValidCall(cli, msg) {
+		log.Printf("======= message before execute: %+v\n", msg)
+
 		// Execute the tx
 		resultExecute, err := cli.ExecuteSponsorTransaction(msg, sBaseAcc.GetAccountNumber(), sBaseAcc.GetSequence())
 		if err != nil {
