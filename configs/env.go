@@ -10,6 +10,9 @@ type EnvConfig struct {
 	HomeKeybase string `yaml:"homekeybase:`
 	Host        string `yaml:"host"`
 	Port        string `yaml:"port"`
+	Keyname     string `yaml:"keyname"`
+	Keypassword string `yaml:"keypassword"`
+	ChainID     string `yaml:"chainid"`
 }
 
 func GetEnv(pathToConfig string) (EnvConfig, error) {
