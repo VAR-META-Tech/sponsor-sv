@@ -2,3 +2,4 @@ data/*
 keybase/*
 verify/*
 sponsor_service_linux
+configs/config.yaml
