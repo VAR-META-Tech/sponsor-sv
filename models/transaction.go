@@ -29,3 +29,7 @@ type TransferResult struct {
 	Success bool
 	MessageHash []byte
 }
+
+type MsgFromFE struct {
+	EncodedTransaction string `json:"encodedTransaction"`
+}

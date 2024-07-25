@@ -17,10 +17,7 @@ var errInvalidLenMsg error = errors.New("invalid sponsor message length")
 
 // This TransferProcess reconstruct the std.TX{}, feed the ExecuteSponsorTransaction() with account number and sequence number
 // Returns the encoded/marshalled ResultBroadcastTxCommit{} with hashTx inside :)
-func TransferProcess(cli *gnoclient.Client, msgInput models.Tx) (maybeTxHash []byte, err error) {
-	msg := std.Tx{}
-	// need to mapping input msg and real msg
-	// msg := msgInput
+func TransferProcess(cli *gnoclient.Client, msg std.Tx) (maybeTxHash []byte, err error) {
 	// Check for length
 	if !validSponsorLen(msg) {
 		return []byte{}, errInvalidLenMsg
@@ -28,23 +25,30 @@ func TransferProcess(cli *gnoclient.Client, msgInput models.Tx) (maybeTxHash []b
 
 	// Query for account number and account sequence
 	baseInfo, err := cli.Signer.Info()
-	log.Println("Error: ", err)
+	if err != nil {
+		log.Println("Error: ", err)
+	}
 	sAddr := baseInfo.GetAddress()
 	log.Printf("======= sAddr: %s\n", sAddr.String())
 	sBaseAcc, err := account.GetAccountBaseWithAddr(cli, sAddr.String())
 	log.Printf("======= sAccountNumb: %v\n", sBaseAcc.GetSequence())
 	log.Printf("======= sSequence: %v\n", sBaseAcc.GetAccountNumber())
+
 	stdSigs := msg.GetSignatures()
-	lenSig := msg.GetSigners()
 	log.Printf("======= len stdSig: %v\n", len(stdSigs))
-	log.Printf("======= len signer`: %v\n", len(lenSig))
 	if err != nil {
 		log.Println("Error getaccount: ", err)
 		return []byte{}, err
 	}
-	log.Printf("message before execute: %+v\n", msg)
-	// Execute the commit
-	resultExecute, err := cli.ExecuteSponsorTransaction(msg, sBaseAcc.AccountNumber, sBaseAcc.Sequence)
+	// add the message into Tx
+	nullSignature := std.Signature{}
+	newMsgSigs := append([]std.Signature{nullSignature}, msg.Signatures...)
+	msg.Signatures = newMsgSigs
+	log.Printf("======= message before execute: %+v\n", msg)
+	// helper.PrettyPrint(msg)
+
+	// Execute the tx
+	resultExecute, err := cli.ExecuteSponsorTransaction(msg, sBaseAcc.GetAccountNumber(), sBaseAcc.GetSequence())
 	if err != nil {
 		log.Println("Error execute: ", err)
 		return []byte{}, err

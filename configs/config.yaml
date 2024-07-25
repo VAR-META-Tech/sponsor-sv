@@ -1,0 +1,6 @@
+# HomeKeybase configurations
+homekeybase: "/Users/thinhnx/Library/Application Support/gno"
+
+# http server
+host: "127.0.0.1"
+port: "8765"

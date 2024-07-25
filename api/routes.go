@@ -1,7 +1,6 @@
 package api
 
 import (
-	// "sponsor-sv/services/account"
 	"net/http"
 	"sponsor-sv/services/account"
 	"sponsor-sv/services/sponsor"
@@ -27,14 +26,6 @@ var routerList = []Routers{
 		Name:     "get account detail in std.BaseAccount",
 	},
 
-	// not use yet
-	// {
-	// 	Pattern:  "/sponsor/list",
-	// 	Method:   "GET",
-	// 	HandlerF: sponsor.ListAllHandler,
-	// 	Name:     "get list sponsor",
-	// },
-
 	{
 		Pattern:  "/sponsor/transfer",
 		Method:   "POST",
@@ -54,7 +45,8 @@ func NewHandler() http.Handler {
 	baseRoute := gin.Default()
 	config := cors.DefaultConfig()
 	config.AllowAllOrigins = true
-	config.AddAllowMethods("GET", "POST", "PUT", "DELETE")
+	config.AddAllowMethods("GET", "POST", "PUT", "DELETE", "FETCH")
+	config.AddAllowHeaders("Content-Type", "Authorization")
 	corsMW := cors.New(config)
 	v1Feature := baseRoute.Group("/v1")
 	gin.SetMode(gin.DebugMode)

@@ -10,8 +10,8 @@ import (
 	"sponsor-sv/services/gclient"
 
 	"github.com/gin-gonic/gin"
-	_ "github.com/gnolang/gno/tm2/pkg/std"
-	"github.com/golang/protobuf/proto"
+	"github.com/gnolang/gno/tm2/pkg/amino"
+	"github.com/gnolang/gno/tm2/pkg/std"
 )
 
 /*
@@ -21,10 +21,6 @@ type MsgNoop struct {
  	EncodedTransaction string `json:"encoded-transaction"`
 }
 */
-
-type MsgFromFE struct {
-	EncodedTransaction string `json:"encoded-transaction"`
-}
 
 func TransferHandler(c *gin.Context) {
 	// Get the body
@@ -42,7 +38,7 @@ func TransferHandler(c *gin.Context) {
 	// msg2 := std.Tx{}
 	// errMarshal := amino.UnmarshalJSON(bodyBytes, &msg)
 
-	msg := MsgFromFE{}
+	msg := models.MsgFromFE{}
 	errMarshal := json.Unmarshal(bodyBytes, &msg)
 	if errMarshal != nil {
 		prob := models.ProblemDetail{
@@ -52,20 +48,13 @@ func TransferHandler(c *gin.Context) {
 		c.AbortWithStatusJSON(http.StatusBadRequest, prob)
 		return
 	}
-	log.Printf("\nmsg from FE: %+v\n", msg)
 	cli := gclient.GetClient()
 
-	// sponsorTx := SponsorMsg()
-	// x, _ := amino.MarshalJSON(sponsorTx)
-	// log.Printf("predefined sponsorTx: %s\n", x)
-
-	// decode the encodedTransaction into std.Tx{} with proto
-	// need this definition from proto files
-	msgProto := models.Tx{}
+	sponsorTx := std.Tx{}
 	//decode base64
-	decodeBytes, errBase64 := base64.RawStdEncoding.DecodeString(msg.EncodedTransaction)
-
+	decodeBytes, errBase64 := base64.StdEncoding.DecodeString(msg.EncodedTransaction)
 	if errBase64 != nil {
+		log.Println("error from decode base64: ", errBase64.Error())
 		prob := models.ProblemDetail{
 			Error:   "can not decode base64",
 			Details: errBase64.Error(),
@@ -73,12 +62,11 @@ func TransferHandler(c *gin.Context) {
 		c.AbortWithStatusJSON(http.StatusBadRequest, prob)
 		return
 	}
-	log.Printf("\n\nMsg in Bytes: %v\n", decodeBytes)
 
-	errDecodeProto := proto.Unmarshal(decodeBytes, &msgProto)
+	// amino supports for Unmarshal proto messages
+	errDecodeProto := amino.Unmarshal(decodeBytes, &sponsorTx)
 	if errDecodeProto != nil {
-		log.Println("erro decode from proto: ", errDecodeProto)
-
+		log.Println("error decode from proto: ", errDecodeProto)
 		prob := models.ProblemDetail{
 			Error:   "can not decode proto from encoded transaction",
 			Details: errDecodeProto.Error(),
@@ -86,8 +74,7 @@ func TransferHandler(c *gin.Context) {
 		c.AbortWithStatusJSON(http.StatusBadRequest, prob)
 		return
 	}
-	log.Printf("\nrecieved msg decoded: %+v\n", msgProto)
-	result, err := TransferProcess(cli, msgProto)
+	result, err := TransferProcess(cli, sponsorTx)
 	if err != nil {
 		prob := models.ProblemDetail{
 			Error:   "can not process transfering",
