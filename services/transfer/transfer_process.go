@@ -2,7 +2,7 @@ package transfer
 
 import (
 	"encoding/json"
-	"errors"
+	"fmt"
 	"log"
 	"sponsor-sv/models"
 	"sponsor-sv/services/account"
@@ -10,17 +10,16 @@ import (
 	ctypes "github.com/gnolang/gno/tm2/pkg/bft/rpc/core/types"
 
 	"github.com/gnolang/gno/gno.land/pkg/gnoclient"
+	"github.com/gnolang/gno/gno.land/pkg/sdk/vm"
 	"github.com/gnolang/gno/tm2/pkg/std"
 )
-
-var errInvalidLenMsg error = errors.New("invalid sponsor message length")
 
 // This TransferProcess reconstruct the std.TX{}, feed the ExecuteSponsorTransaction() with account number and sequence number
 // Returns the encoded/marshalled ResultBroadcastTxCommit{} with hashTx inside :)
 func TransferProcess(cli *gnoclient.Client, msg std.Tx) (maybeTxHash []byte, err error) {
 	// Check for length
 	if !validSponsorLen(msg) {
-		return []byte{}, errInvalidLenMsg
+		return []byte{}, models.ErrInvalidLenMsg
 	}
 
 	// Query for account number and account sequence
@@ -44,24 +43,31 @@ func TransferProcess(cli *gnoclient.Client, msg std.Tx) (maybeTxHash []byte, err
 	nullSignature := std.Signature{}
 	newMsgSigs := append([]std.Signature{nullSignature}, msg.Signatures...)
 	msg.Signatures = newMsgSigs
+	msg.Memo = "produced by sponsor service"
+
 	log.Printf("======= message before execute: %+v\n", msg)
-	// helper.PrettyPrint(msg)
 
-	// Execute the tx
-	resultExecute, err := cli.ExecuteSponsorTransaction(msg, sBaseAcc.GetAccountNumber(), sBaseAcc.GetSequence())
-	if err != nil {
-		log.Println("Error execute: ", err)
-		return []byte{}, err
-	}
-	result := rebuildMessage(resultExecute)
+	// valid check, if not valid then no execute
+	if checkValidCall(cli, msg) {
+		// Execute the tx
+		resultExecute, err := cli.ExecuteSponsorTransaction(msg, sBaseAcc.GetAccountNumber(), sBaseAcc.GetSequence())
+		if err != nil {
+			log.Println("Error execute: ", err)
+			return []byte{}, err
+		}
 
-	// Encode the result
-	resultEncoded, err := json.Marshal(&result)
-	if err != nil {
-		log.Println("Error: ", err)
-		return []byte{}, err
+		result := rebuildMessage(resultExecute)
+
+		// Encode the result
+		resultEncoded, err := json.Marshal(&result)
+		if err != nil {
+			log.Println("Error: ", err)
+			return []byte{}, err
+		}
+
+		return resultEncoded, nil
 	}
-	return resultEncoded, nil
+	return []byte{}, models.ErrInvalidCallerMsg
 }
 
 func validSponsorLen(msg std.Tx) bool {
@@ -78,4 +84,31 @@ func rebuildMessage(msg *ctypes.ResultBroadcastTxCommit) models.TransferResult {
 		Success:     true,
 		MessageHash: msg.Hash,
 	}
+}
+
+// currently just support checking vm_msgCall here. Add your checks here to gurantee that your sponsor will not process bad call to chain
+func checkValidCall(cli *gnoclient.Client, txs std.Tx) bool {
+	for i, tx := range txs.GetMsgs() {
+		log.Println("====== checking for message ", i, " with msgType: ", tx.Type())
+		switch tx.Type() {
+		case "no_op":
+			log.Println("====== skip checking msg noop")
+		case "exec":
+			realmToCheck := tx.(vm.MsgCall).PkgPath
+			argsCalled := tx.(vm.MsgCall).Args
+			funcCalled := tx.(vm.MsgCall).Func
+			qevalExpression := fmt.Sprintf("%s(\"%s\")", funcCalled, argsCalled[0])
+			log.Printf("====== checking calling to /r %s with args %s\n", realmToCheck, qevalExpression)
+			_, _, err := cli.QEval(realmToCheck, qevalExpression)
+			if err != nil {
+				log.Println("====== err checking ", err.Error())
+				return false
+			}
+			log.Println("====== checking done, msg ok")
+			return true
+		default:
+			// continue
+		}
+	}
+	return true
 }
