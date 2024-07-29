@@ -55,8 +55,12 @@ func TransferProcess(cli *gnoclient.Client, msg std.Tx) (maybeTxHash []byte, err
 			return []byte{}, err
 		}
 
+		// this will check for msg.Deliver.IsErr or not
 		result := rebuildMessage(resultExecute)
-
+		if !result.Success {
+			log.Println("======= failed on execute message")
+			return []byte{}, models.ErrOnExecuteMsg
+		}
 		// Encode the result
 		resultEncoded, err := json.Marshal(&result)
 		if err != nil {
